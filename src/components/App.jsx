@@ -1,4 +1,3 @@
-import React, { Component } from 'react';
 import * as API from '../api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,77 +6,68 @@ import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
 import { Button } from './Button/Button';
+import { useState, useEffect } from 'react';
 
-export class App extends Component {
-  state = {
-    searchQuery: '',
-    images: [],
-    page: 1,
-    isLoading: false,
-    error: null,
-    loadMore: false,
-    totalPages: 0,
-  };
-  async componentDidUpdate(_, prevState) {
-    const { searchQuery, page } = this.state;
+export const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
 
-    if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
-      this.addImages();
-    }
-  }
-
-  addImages = async () => {
-    const { searchQuery, page } = this.state;
-
-    try {
-      this.setState({ isLoading: true });
-
-      const data = await API.fetchData(searchQuery, page);
-
-      if (data.hits.length === 0) {
-        toast.info('Sorry image not found');
+  useEffect(() => {
+    const addImages = async () => {
+      if (!searchQuery) {
         return;
       }
+      try {
+        setIsLoading(true);
 
-      const normalizedImages = API.normalizedImages(data.hits);
+        const data = await API.fetchData(searchQuery, page);
 
-      this.setState(state => ({
-        images: [...state.images, ...normalizedImages],
-        isLoading: false,
-        error: '',
-        totalPages: Math.ceil(data.totalHits / 12),
-      }));
-    } catch (error) {
-      this.setState({ error: 'Something went wrong!' });
-      throw error;
-    } finally {
-      this.setState({ isLoading: false });
-    }
+        if (data.hits.length === 0) {
+          toast.info('Sorry image not found');
+          return;
+        }
+
+        const normalizedImages = API.normalizedImages(data.hits);
+
+        setImages(prevImages => [...prevImages, ...normalizedImages]);
+        setTotalPages(Math.ceil(data.totalHits / 12));
+        setError(null);
+      } catch (error) {
+        console.log(error);
+        setError('Something went wrong!');
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    addImages();
+  }, [searchQuery, page]);
+
+  const handleFormSubmit = newSearchQuery => {
+    setSearchQuery(newSearchQuery);
+    setImages([]);
+    setPage(1);
   };
 
-  handleFormSubmit = searchQuery => {
-    this.setState({ searchQuery, images: [], page: 1 });
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
+  return (
+    <Container>
+      <ToastContainer />
+      <Searchbar onSubmit={handleFormSubmit} />
+      {images.length > 0 && <ImageGallery images={images} />}
 
-  render() {
-    const { images, isLoading, page, totalPages } = this.state;
-    return (
-      <Container>
-        <ToastContainer />
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        {images.length > 0 && <ImageGallery images={images} />}
-
-        {isLoading && <Loader />}
-        {images.length > 0 && totalPages !== page && !isLoading && (
-          <Button onClick={this.loadMore} />
-        )}
-      </Container>
-    );
-  }
-}
+      {isLoading && <Loader />}
+      {images.length > 0 && totalPages !== page && !isLoading && (
+        <Button onClick={loadMore} />
+      )}
+    </Container>
+  );
+};
