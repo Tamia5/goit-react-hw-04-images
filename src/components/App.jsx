@@ -13,6 +13,7 @@ export const App = () => {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
 
