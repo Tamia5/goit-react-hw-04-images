@@ -1,4 +1,3 @@
-import React, { Component } from 'react';
 import { GalletyItem } from './ImageGalleryItem.styled';
 import { ModalImg } from 'components/Modal/Modal';
 import { useState } from 'react';

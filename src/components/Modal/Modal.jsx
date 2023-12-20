@@ -1,4 +1,3 @@
-import React, { Component } from 'react';
 import Modal from 'react-modal';
 import styled from 'styled-components';
 
@@ -24,21 +23,17 @@ const ImagModal = styled.img`
 
 Modal.setAppElement('#root');
 
-export class ModalImg extends Component {
-  render() {
-    const { imageUrl, tags, isOpen, onClose } = this.props;
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={onClose}
-        shouldCloseOnOverlayClick={true}
-        shouldCloseOnEsc={true}
-        style={customStyles}
-        contentLabel="Image Modal"
-      >
-        <ImagModal src={imageUrl} alt={tags}></ImagModal>
-      </Modal>
-    );
-  }
-}
+export const ModalImg = ({ imageUrl, tags, isOpen, onClose }) => {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      shouldCloseOnOverlayClick={true}
+      shouldCloseOnEsc={true}
+      style={customStyles}
+      contentLabel="Image Modal"
+    >
+      <ImagModal src={imageUrl} alt={tags}></ImagModal>
+    </Modal>
+  );
+};
